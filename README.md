@@ -37,17 +37,17 @@ Feature Engineering → PostgreSQL → Model Inference → SHAP → RAG → Resp
 
 ## 🛠 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| ML | XGBoost, scikit-learn, SHAP |
-| Deep Learning | PyTorch + TabNet |
-| NLP / RAG | sentence-transformers, ChromaDB |
-| MLOps | MLflow (tracking + registry) |
-| API | FastAPI + Uvicorn |
-| Database | PostgreSQL + SQLAlchemy |
-| CI/CD | GitHub Actions |
-| Containers | Docker + Docker Compose |
-| Cloud | AWS EC2 / Render |
+| Layer          | Technology                        |
+|:---------------|:----------------------------------|
+| ML             | XGBoost, scikit-learn, SHAP       |
+| Deep Learning  | PyTorch + TabNet                  |
+| NLP / RAG      | sentence-transformers, ChromaDB   |
+| MLOps          | MLflow (tracking + registry)      |
+| API            | FastAPI + Uvicorn                 |
+| Database       | PostgreSQL + SQLAlchemy           |
+| CI/CD          | GitHub Actions                    |
+| Containers     | Docker + Docker Compose           |
+| Cloud          | AWS EC2 / Render                  |
 
 ---
 
@@ -114,10 +114,10 @@ curl http://localhost:8000/health
 
 ## 📊 Model Performance
 
-| Model | AUC-ROC | F1 (Fraud) | Precision | Recall |
-|---|---|---|---|---|
-| XGBoost | TBD | TBD | TBD | TBD |
-| TabNet | TBD | TBD | TBD | TBD |
+| Model   | AUC-ROC | F1 (Fraud) | Precision | Recall |
+|:--------|:--------|:-----------|:----------|:-------|
+| XGBoost | TBD     | TBD        | TBD       | TBD    |
+| TabNet  | TBD     | TBD        | TBD       | TBD    |
 
 *Updated after training on Kaggle Credit Card Fraud dataset (284,807 transactions)*
 
