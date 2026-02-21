@@ -51,7 +51,7 @@ data/processed/
 *.pt
 *.pth
 *.onnx
-models/
+/models/
 mlruns/
 mlartifacts/
 
