@@ -14,9 +14,14 @@ from pathlib import Path
 # Config                                                               #
 # ------------------------------------------------------------------ #
 
-MLFLOW_URI      = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+from pathlib import Path
+
+MLFLOW_TRACKING_DIR = Path(__file__).parents[2] / "mlruns"
+# Default to local file-based tracking (no server needed for training).
+# Override with env var MLFLOW_TRACKING_URI=http://localhost:5000 when running the UI server.
+MLFLOW_URI      = os.getenv("MLFLOW_TRACKING_URI", f"file:///{MLFLOW_TRACKING_DIR.as_posix()}")
 EXPERIMENT_NAME = "finshield-fraud-detection"
-ARTIFACT_ROOT   = Path(__file__).parents[2] / "mlruns"
+ARTIFACT_ROOT   = MLFLOW_TRACKING_DIR
 
 
 def setup_mlflow() -> None:
@@ -29,8 +34,8 @@ def setup_mlflow() -> None:
 def log_dataset_info(df_train, df_test) -> None:
     """Log dataset size and fraud rate to the active MLflow run."""
     mlflow.log_params({
-        "train_size":       len(df_train),
-        "test_size":        len(df_test),
+        "n_train":          len(df_train),
+        "n_test":           len(df_test),
         "train_fraud_rate": round(df_train["class"].mean(), 5),
         "test_fraud_rate":  round(df_test["class"].mean(), 5),
     })
