@@ -49,15 +49,19 @@ TABNET_PARAMS = {
     "optimizer_params": {"lr": 2e-3, "weight_decay": 1e-5},
     "scheduler_params": {"step_size": 50, "gamma": 0.9},
     "scheduler_fn":     torch.optim.lr_scheduler.StepLR,
-    "verbose":          10,       # print every N epochs
+    "verbose":           1,        # print every epoch
 }
 
 TRAINING_PARAMS = {
-    "max_epochs":       100,
-    "patience":         20,       # early stopping patience
-    "batch_size":       1024,
-    "virtual_batch_size": 128,    # ghost batch norm size
+    "max_epochs":         20,    # CPU-feasible (20 × ~1.5 min/epoch ≈ 30 mins)
+    "patience":            5,    # early stop if no val_auc improvement for 5 epochs
+    "batch_size":       2048,    # larger batch → faster epoch on CPU
+    "virtual_batch_size": 256,
 }
+
+# Subsample cap for training — keeps CPU training under 30 minutes.
+# Full dataset still used for held-out test set.
+MAX_TRAIN_ROWS = 60_000
 
 
 # ------------------------------------------------------------------ #
@@ -96,10 +100,28 @@ def train(
     X = df[feature_cols].values.astype(np.float32)
     y = df["class"].values.astype(int)
 
-    # 2. Stratified split
+    # 2. Stratified split (full data for test, subsample for train)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=42, stratify=y
     )
+
+    # Subsample training set for CPU-feasibility while preserving fraud ratio
+    if len(X_train) > MAX_TRAIN_ROWS:
+        logger.info(f"Subsampling train from {len(X_train)} → {MAX_TRAIN_ROWS} (stratified)")
+        idx_legit = np.where(y_train == 0)[0]
+        idx_fraud = np.where(y_train == 1)[0]
+        fraud_ratio = len(idx_fraud) / len(y_train)
+        n_fraud = max(int(MAX_TRAIN_ROWS * fraud_ratio), len(idx_fraud))  # keep ALL fraud
+        n_legit = MAX_TRAIN_ROWS - min(n_fraud, len(idx_fraud))
+        n_fraud = min(n_fraud, len(idx_fraud))
+        rng = np.random.default_rng(42)
+        sampled = np.concatenate([
+            rng.choice(idx_legit, size=n_legit, replace=False),
+            idx_fraud,
+        ])
+        rng.shuffle(sampled)
+        X_train, y_train = X_train[sampled], y_train[sampled]
+        logger.info(f"Train after subsample: {X_train.shape} | fraud: {y_train.sum()}")
 
     # Validation split from training set (TabNet needs it for early stopping)
     X_train, X_val, y_train, y_val = train_test_split(
